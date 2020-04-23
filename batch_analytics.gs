@@ -48,12 +48,20 @@ function getAfterLoginOptions(spreadSheet) {
         token = /"_token" type="hidden" value="(.*?)">/g.exec(beforeLoginResponse.getContentText())[1]
 
     /** ログイン情報 */
-    const loginUrl = "https://ahrefs.com/user/login?_token=" + token + "&email=" + email + "&password=" + password + "&return_to=https%3A%2F%2Fahrefs.com%2F",
-        loginOptions = {
+    Logger.log("loginUrl")
+    const loginUrl = "https://ahrefs.com/user/login?_token=" + token + "&email=" + email + "&password=" + password + "&return_to=https%3A%2F%2Fahrefs.com%2F"
+    Logger.log(loginUrl)
+    const loginOptions = {
             "method": "post",
             "headers": {
                 "Cookie": beforeLoginCookie,
                 "_token": token
+            },
+            "payload": {
+              "_token": token,
+              "email": email,
+              "password": password,
+              "return_to": "https://ahrefs.com/"
             },
             "followRedirects": false,
             "contentType": "application/x-www-form-urlencoded"
@@ -61,9 +69,10 @@ function getAfterLoginOptions(spreadSheet) {
         loginResponse = UrlFetchApp.fetch(loginUrl, loginOptions)
 
     /** ログイン後情報 */
+    Logger.log("afterLoginCookie")
     const afterLoginCookie = this.createCookie(loginResponse.getAllHeaders()["Set-Cookie"]),
         afterLoginOptions = {
-            "method": "get",
+            "method": "post",
             "headers": {
                 "Cookie": afterLoginCookie,
                 "_token": token,
@@ -303,6 +312,10 @@ function batchAnalyze(urlParamOfDomainNames, options) {
     options.payload.history_mode = "live"
 
     const url = "https://ahrefs.com/batch-analysis"
+    
+    Logger.log("urloptions")
+    Logger.log(options)
+    
     const fetch = UrlFetchApp.fetch(url, options)
     const response = fetch.getContentText().replace(/\s+|\r?\n/g, "").replace(/&mdash;/g, "—")
     const title = response.match(/<title>(.*?)<\/title>/)
